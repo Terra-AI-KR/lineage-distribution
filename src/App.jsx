@@ -66,6 +66,10 @@ export default function App() {
   const [selectedPayoutMembers, setSelectedPayoutMembers] = useState([])
   const [selectedPaymentHistory, setSelectedPaymentHistory] = useState([])
   const [activeTab, setActiveTab] = useState('input')
+  const [isLoggedIn, setIsLoggedIn] = useState(
+  localStorage.getItem('lineageLoggedIn') === 'true'
+)
+const [passwordInput, setPasswordInput] = useState('')
   const [selectedRaid, setSelectedRaid] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
 
@@ -486,7 +490,25 @@ useEffect(() => {
   loadData()
 }, [])
 
+const loginPassword = '0529'
+
+const handleLogin = () => {
+  if (passwordInput === loginPassword) {
+    localStorage.setItem('lineageLoggedIn', 'true')
+    setIsLoggedIn(true)
+  } else {
+    alert('비밀번호가 틀렸습니다.')
+  }
+}
+
+const handleLogout = () => {
+  localStorage.removeItem('lineageLoggedIn')
+  setIsLoggedIn(false)
+  setPasswordInput('')
+}
+
   return (
+    
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1800px] mx-auto">
         <div className="flex gap-3 mb-6">
@@ -510,6 +532,13 @@ useEffect(() => {
           >
             미수령 정산
           </button>
+            <button
+    onClick={handleLogout}
+    className="px-5 py-3 rounded-2xl font-bold border bg-white"
+  >
+    로그아웃
+  </button>
+
         </div>
 
         <div className="mb-6">
@@ -612,6 +641,40 @@ useEffect(() => {
                   <div className="grid grid-cols-5 gap-2">
                     {searchedMembers.map((member) => {
                       const selected = selectedMembers.includes(member.name)
+
+                      if (!isLoggedIn) {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white rounded-2xl border shadow-sm p-8 w-[360px]">
+        <h1 className="text-2xl font-bold mb-4">
+          반격라인 분배 계산기
+        </h1>
+
+        <p className="text-gray-500 text-sm mb-5">
+          비밀번호를 입력하세요.
+        </p>
+
+        <input
+          type="password"
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleLogin()
+          }}
+          placeholder="비밀번호"
+          className="w-full border rounded-xl px-4 py-3 mb-4"
+        />
+
+        <button
+          onClick={handleLogin}
+          className="w-full bg-yellow-400 hover:bg-yellow-500 rounded-xl py-3 font-bold"
+        >
+          접속하기
+        </button>
+      </div>
+    </div>
+  )
+}
 
                       return (
                         <button
