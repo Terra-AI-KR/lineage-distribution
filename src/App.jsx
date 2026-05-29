@@ -1071,7 +1071,7 @@ if (!isLoggedIn) {
   .map((raid, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-xl p-4 bg-gray-50 flex flex-col justify-between min-h-[170px]"
+                  className="border rounded-xl p-4 bg-gray-50 min-h-[150px]"
                 >
                   <div>
                     <div className="font-bold">
@@ -1083,7 +1083,7 @@ if (!isLoggedIn) {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-2">
                     <button
                       onClick={() => setSelectedRaid(raid)}
                       className="px-4 py-2 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600"
