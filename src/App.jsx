@@ -77,6 +77,16 @@ const [passwordInput, setPasswordInput] = useState('')
   const [selectedItem, setSelectedItem] = useState('')
   const [adena, setAdena] = useState('')
   const [memberSearch, setMemberSearch] = useState('')
+  const [showMemberManager, setShowMemberManager] = useState(false)
+
+  const [newMembers, setNewMembers] = useState(
+    Array.from({ length: 10 }, () => ({ name: '', group: '기사' }))
+)
+
+  const [selectedDeleteMembers, setSelectedDeleteMembers] = useState([])
+
+  const [editingMember, setEditingMember] = useState(null)
+  const [editingMemberName, setEditingMemberName] = useState('')  
 
   const [draggedMember, setDraggedMember] = useState(null)
   const [draggedGroup, setDraggedGroup] = useState(null)
@@ -163,6 +173,98 @@ const [passwordInput, setPasswordInput] = useState('')
         : [...prev, memberName]
     )
   }
+
+  const addMembers = () => {
+  const updated = { ...groups }
+
+  newMembers.forEach((member) => {
+    if (!member.name.trim()) return
+
+    updated[member.group].push({
+      name: member.name.trim(),
+      unpaid: 0,
+      total: 0,
+      attendance: 0,
+    })
+  })
+
+  setGroups(updated)
+
+  saveData(
+    updated,
+    raidHistory,
+    paymentHistory
+  )
+
+  setNewMembers(
+    Array.from({ length: 10 }, () => ({ name: '', group: '기사' }))
+  )
+
+  alert('혈원 추가 완료')
+}
+
+const updateMemberName = () => {
+  if (!editingMember) return
+
+  const updated = { ...groups }
+
+  Object.keys(updated).forEach((groupName) => {
+    updated[groupName] = updated[groupName].map((member) => {
+      if (member.name === editingMember.name) {
+        return {
+          ...member,
+          name: editingMemberName,
+        }
+      }
+
+      return member
+    })
+  })
+
+  setGroups(updated)
+
+  saveData(
+    updated,
+    raidHistory,
+    paymentHistory
+  )
+
+  setEditingMember(null)
+  setEditingMemberName('')
+
+  alert('혈원 수정 완료')
+}
+
+const deleteSelectedMembers = () => {
+  if (selectedDeleteMembers.length === 0) {
+    alert('삭제할 혈원을 선택하세요')
+    return
+  }
+
+  if (!confirm('선택한 혈원을 삭제할까요?')) {
+    return
+  }
+
+  const updated = {}
+
+  Object.keys(groups).forEach((groupName) => {
+    updated[groupName] = groups[groupName].filter(
+      (member) => !selectedDeleteMembers.includes(member.name)
+    )
+  })
+
+  setGroups(updated)
+
+  saveData(
+    updated,
+    raidHistory,
+    paymentHistory
+  )
+
+  setSelectedDeleteMembers([])
+
+  alert('혈원 삭제 완료')
+}
 
   const dragStart = (member, group) => {
     setDraggedMember(member)
@@ -562,6 +664,13 @@ if (!isLoggedIn) {
             className={`px-5 py-3 rounded-2xl font-bold border ${activeTab === 'payout' ? 'bg-yellow-400 border-yellow-500' : 'bg-white'}`}
           >
             미수령 정산
+          </button>
+
+          <button
+            onClick={() => setShowMemberManager(true)}
+            className="px-5 py-3 rounded-2xl font-bold border bg-blue-500 text-white"
+          >
+            혈원 관리
           </button>
             <button
     onClick={handleLogout}
@@ -1040,6 +1149,238 @@ if (!isLoggedIn) {
             </div>
           </div>
         )}
+        {showMemberManager && (
+
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl w-[1000px] max-h-[90vh] overflow-auto p-6">
+
+      <div className="flex justify-between items-center mb-5">
+
+        <h2 className="text-2xl font-bold">
+          혈원 관리
+        </h2>
+
+        <button
+          onClick={() => setShowMemberManager(false)}
+          className="px-4 py-2 rounded-xl bg-gray-100"
+        >
+          닫기
+        </button>
+
+      </div>
+
+      <div className="mb-8">
+
+        <h3 className="text-lg font-bold mb-3">
+          혈원 추가
+        </h3>
+
+        <div className="space-y-2">
+
+          {newMembers.map((member, idx) => (
+
+            <div
+              key={idx}
+              className="grid grid-cols-2 gap-3"
+            >
+
+              <input
+                type="text"
+                placeholder={`혈원명 ${idx + 1}`}
+                value={member.name}
+                onChange={(e) => {
+
+                  const updated = [...newMembers]
+
+                  updated[idx] = {
+                    ...updated[idx],
+                    name: e.target.value
+                  }
+
+                  setNewMembers(updated)
+
+                }}
+                className="border rounded-xl px-3 py-2"
+              />
+
+              <select
+                value={member.group}
+                onChange={(e) => {
+
+                  const updated = [...newMembers]
+
+                  updated[idx] = {
+                    ...updated[idx],
+                    group: e.target.value
+                  }
+
+                  setNewMembers(updated)
+
+                }}
+                className="border rounded-xl px-3 py-2"
+              >
+                <option>기사</option>
+                <option>요정</option>
+                <option>법사</option>
+                <option>미확인</option>
+              </select>
+
+            </div>
+
+          ))}
+
+        </div>
+
+        <button
+          onClick={addMembers}
+          className="mt-4 px-5 py-3 rounded-xl bg-green-500 text-white font-bold"
+        >
+          혈원 추가 저장
+        </button>
+
+      </div>
+
+      <div>
+
+        <div className="flex justify-between items-center mb-4">
+
+          <h3 className="text-lg font-bold">
+            혈원 수정 / 삭제
+          </h3>
+
+          <button
+            onClick={deleteSelectedMembers}
+            className="px-4 py-2 rounded-xl bg-red-500 text-white font-bold"
+          >
+            선택 삭제
+          </button>
+
+        </div>
+
+        <div className="grid grid-cols-4 gap-4">
+
+          {Object.entries(groups).map(([groupName, members]) => (
+
+            <div
+              key={groupName}
+              className="border rounded-2xl p-4"
+            >
+
+              <div className="font-bold mb-3">
+                {groupName}
+              </div>
+
+              <div className="space-y-2">
+
+                {members.map((member) => (
+
+                  <div
+                    key={member.name}
+                    className="flex items-center gap-2 border rounded-xl px-2 py-2"
+                  >
+
+                    <input
+                      type="checkbox"
+                      checked={selectedDeleteMembers.includes(member.name)}
+                      onChange={(e) => {
+
+                        if (e.target.checked) {
+
+                          setSelectedDeleteMembers((prev) => [
+                            ...prev,
+                            member.name
+                          ])
+
+                        } else {
+
+                          setSelectedDeleteMembers((prev) =>
+                            prev.filter((name) => name !== member.name)
+                          )
+
+                        }
+
+                      }}
+                    />
+
+                    <div className="flex-1 text-sm truncate">
+                      {member.name}
+                    </div>
+
+                    <button
+                      onClick={() => {
+
+                        setEditingMember(member)
+                        setEditingMemberName(member.name)
+
+                      }}
+                      className="px-2 py-1 rounded-lg bg-yellow-100 text-xs"
+                    >
+                      수정
+                    </button>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {editingMember && (
+
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-2xl p-6 w-[400px]">
+
+            <h3 className="text-xl font-bold mb-4">
+              혈원 수정
+            </h3>
+
+            <input
+              type="text"
+              value={editingMemberName}
+              onChange={(e) =>
+                setEditingMemberName(e.target.value)
+              }
+              className="w-full border rounded-xl px-3 py-3 mb-4"
+            />
+
+            <div className="flex gap-2">
+
+              <button
+                onClick={updateMemberName}
+                className="flex-1 bg-yellow-400 rounded-xl py-3 font-bold"
+              >
+                저장
+              </button>
+
+              <button
+                onClick={() => setEditingMember(null)}
+                className="flex-1 bg-gray-200 rounded-xl py-3 font-bold"
+              >
+                취소
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+
+  </div>
+
+)}
       </div>
     </div>
   )
