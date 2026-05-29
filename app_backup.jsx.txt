@@ -1,0 +1,300 @@
+import { useMemo, useState } from 'react'
+import './index.css'
+
+export default function App() {
+  const initialGroups = {
+    기사: [
+      '데스나이트',
+      '옹박',
+      'SB',
+      '돌산',
+      '스타링크',
+      '아킬레스',
+      '전설',
+      '폭군',
+    ],
+
+    요정: [
+      '발트리스',
+      '부엉이v',
+      '송태섭',
+      '싼타',
+      '쿠크다스',
+      '태풍',
+    ],
+
+    법사: [
+      '귀로',
+      '쿠거',
+      '백색',
+      '서큐버스',
+      '조과',
+      '폭풍',
+    ],
+
+    미확인: [
+      '각서',
+      '구데기',
+      '국토부장관',
+      '그냥패',
+      '동백낭',
+    ],
+  }
+
+  const [groups, setGroups] = useState(initialGroups)
+  const [selectedMembers, setSelectedMembers] = useState([])
+
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('21시')
+  const [boss, setBoss] = useState('커츠')
+  const [adena, setAdena] = useState('')
+
+  const [draggedMember, setDraggedMember] = useState(null)
+  const [draggedGroup, setDraggedGroup] = useState(null)
+
+  const bossTimes = [
+    '09시',
+    '11시',
+    '12시',
+    '13시',
+    '15시',
+    '17시',
+    '18시',
+    '19시',
+    '21시',
+    '22시',
+    '24시',
+    '01시',
+    '03시',
+    '05시',
+    '06시',
+    '07시',
+  ]
+
+  const bosses = [
+    '커츠',
+    '이프리트',
+    '드레이크',
+    '바포메트',
+    '카스파',
+    '네크로맨서',
+  ]
+
+  const participantCount = selectedMembers.length
+
+  const perPerson = useMemo(() => {
+    const amount = Number(adena || 0)
+
+    if (!amount || participantCount === 0) {
+      return 0
+    }
+
+    return Math.floor(amount / participantCount)
+  }, [adena, participantCount])
+
+  const toggleMember = (member) => {
+    setSelectedMembers((prev) => {
+      if (prev.includes(member)) {
+        return prev.filter((m) => m !== member)
+      }
+
+      return [...prev, member]
+    })
+  }
+
+  const dragStart = (member, group) => {
+    setDraggedMember(member)
+    setDraggedGroup(group)
+  }
+
+  const dropMember = (targetGroup) => {
+    if (!draggedMember || !draggedGroup) return
+
+    if (draggedGroup === targetGroup) return
+
+    const updated = { ...groups }
+
+    updated[draggedGroup] = updated[draggedGroup].filter(
+      (m) => m !== draggedMember
+    )
+
+    updated[targetGroup] = [...updated[targetGroup], draggedMember]
+
+    setGroups(updated)
+
+    setDraggedMember(null)
+    setDraggedGroup(null)
+  }
+
+  const formatNumber = (value) => {
+    return Number(value || 0).toLocaleString()
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-[1800px] mx-auto">
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">
+            반격라인 분배 계산기
+          </h1>
+
+          <p className="text-gray-500">
+            왕혈 보스 분배 시스템
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl border p-6 mb-6 shadow-sm">
+
+          <div className="grid grid-cols-6 gap-4">
+
+            <div>
+              <div className="font-bold text-sm mb-2">날짜</div>
+
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border rounded-xl px-3 py-3"
+              />
+            </div>
+
+            <div>
+              <div className="font-bold text-sm mb-2">타임</div>
+
+              <select
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full border rounded-xl px-3 py-3"
+              >
+                {bossTimes.map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="font-bold text-sm mb-2">보스</div>
+
+              <select
+                value={boss}
+                onChange={(e) => setBoss(e.target.value)}
+                className="w-full border rounded-xl px-3 py-3"
+              >
+                {bosses.map((b) => (
+                  <option key={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="font-bold text-sm mb-2">분배금</div>
+
+              <input
+                type="text"
+                value={adena}
+                onChange={(e) =>
+                  setAdena(e.target.value.replace(/[^0-9]/g, ''))
+                }
+                placeholder="12000000"
+                className="w-full border rounded-xl px-3 py-3"
+              />
+            </div>
+
+            <div className="bg-gray-50 border rounded-2xl p-4">
+              <div className="text-sm text-gray-500 mb-2">
+                참가 인원
+              </div>
+
+              <div className="text-3xl font-bold">
+                {participantCount}명
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-4">
+              <div className="text-sm text-gray-500 mb-2">
+                인당 분배금
+              </div>
+
+              <div className="text-2xl font-bold text-yellow-700">
+                {formatNumber(perPerson)}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="grid grid-cols-4 gap-5">
+
+          {Object.entries(groups).map(([groupName, members]) => (
+
+            <div
+              key={groupName}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => dropMember(groupName)}
+              className="bg-white rounded-2xl border shadow-sm overflow-hidden"
+            >
+
+              <div className="px-5 py-4 border-b bg-gray-50">
+                <div className="flex justify-between items-center">
+
+                  <div className="font-bold text-lg">
+                    {groupName}
+                  </div>
+
+                  <div className="text-sm text-gray-500">
+                    {members.length}명
+                  </div>
+
+                </div>
+              </div>
+
+              <div className="p-4 grid grid-cols-2 gap-3 min-h-[650px]">
+
+                {members.map((member) => {
+
+                  const selected = selectedMembers.includes(member)
+
+                  return (
+                    <div
+                      key={member}
+                      draggable
+                      onDragStart={() => dragStart(member, groupName)}
+                      onClick={() => toggleMember(member)}
+                      className={`
+                        border rounded-2xl p-3 cursor-pointer transition-all
+                        ${
+                          selected
+                            ? 'bg-yellow-100 border-yellow-400 shadow-md'
+                            : 'bg-gray-50 border-gray-200'
+                        }
+                      `}
+                    >
+
+                      <div className="font-bold mb-3 text-sm">
+                        {member}
+                      </div>
+
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div>미수령: 0</div>
+                        <div>누적: 0</div>
+                        <div>참여도: 0%</div>
+                      </div>
+
+                    </div>
+                  )
+                })}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+    </div>
+  )
+}
