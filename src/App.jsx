@@ -1044,7 +1044,7 @@ if (!isLoggedIn) {
               {raidHistory.map((raid, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-xl p-4 bg-gray-50 flex justify-between items-center"
+                  className="border rounded-xl p-4 bg-gray-50"
                 >
                   <div>
                     <div className="font-bold">
@@ -1056,7 +1056,7 @@ if (!isLoggedIn) {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-3">
                     <button
                       onClick={() => setSelectedRaid(raid)}
                       className="px-4 py-2 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600"
@@ -1284,7 +1284,17 @@ if (!isLoggedIn) {
                 <div>인당 분배금: {formatNumber(selectedRaid.perPerson)}</div>
               </div>
 
-              <div className="font-bold mb-3">참가자 목록</div>
+              <div className="flex justify-between items-center mb-3">
+
+                <div className="font-bold">
+                  참가자 목록
+             </div>
+
+                <div className="text-sm font-bold text-blue-600">
+                  총 {selectedRaid.participants.length}명
+             </div>
+
+           </div>
 
               <div className="grid grid-cols-3 gap-2">
                 {selectedRaid.participants.map((member) => (
