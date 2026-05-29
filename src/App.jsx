@@ -1034,17 +1034,44 @@ if (!isLoggedIn) {
               회차별 리스트
             </h2>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-4">
               {raidHistory.length === 0 && (
                 <div className="text-gray-500 text-sm">
                   저장된 회차가 없습니다.
                 </div>
               )}
 
-              {raidHistory.map((raid, idx) => (
+              {[...raidHistory]
+  .sort((a, b) => {
+
+    const timeOrder = {
+      '01시': 1,
+      '03시': 3,
+      '05시': 5,
+      '06시': 6,
+      '07시': 7,
+      '09시': 9,
+      '11시': 11,
+      '12시': 12,
+      '13시': 13,
+      '15시': 15,
+      '17시': 17,
+      '18시': 18,
+      '19시': 19,
+      '21시': 21,
+      '22시': 22,
+      '24시': 24,
+    }
+
+    const aDate = new Date(`${a.date} ${timeOrder[a.time] || 0}:00`)
+    const bDate = new Date(`${b.date} ${timeOrder[b.time] || 0}:00`)
+
+    return bDate - aDate
+  })
+  .map((raid, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-xl p-4 bg-gray-50"
+                  className="border rounded-xl p-4 bg-gray-50 flex flex-col justify-between min-h-[170px]"
                 >
                   <div>
                     <div className="font-bold">
