@@ -1071,7 +1071,7 @@ if (!isLoggedIn) {
   .map((raid, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-xl p-4 bg-gray-50 min-h-[150px]"
+                  className="border rounded-xl p-4 bg-gray-50 min-h-[130px]"
                 >
                   <div>
                     <div className="font-bold">
