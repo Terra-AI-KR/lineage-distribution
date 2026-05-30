@@ -97,7 +97,7 @@ export default function App() {
   const [showMemberManager, setShowMemberManager] = useState(false)
 
   const [newMembers, setNewMembers] = useState(
-    Array.from({ length: 10 }, () => ({ name: '', group: '기사' }))
+    Array.from({ length: 9 }, () => ({ name: '', group: '기사' }))
 )
 
   const [selectedDeleteMembers, setSelectedDeleteMembers] = useState([])
@@ -914,11 +914,16 @@ const deleteSelectedMembers = async () => {
           </button>
 
           <button
-            onClick={() => setShowMemberManager(true)}
-            className="px-5 py-3 rounded-2xl font-bold border bg-blue-500 text-white"
+            onClick={() => setActiveTab('memberManage')}
+            className={`px-5 py-3 rounded-2xl font-bold border ${
+              activeTab === 'memberManage'
+                ? 'bg-blue-500 text-white border-blue-600'
+                : 'bg-white'
+            }`}
           >
             혈원 관리
           </button>
+
             <button
     onClick={handleLogout}
     className="px-5 py-3 rounded-2xl font-bold border bg-white"
@@ -1434,238 +1439,155 @@ const deleteSelectedMembers = async () => {
             </div>
           </div>
         )}
-        {showMemberManager && (
+        
+        {activeTab === 'memberManage' && (
+  <div className="space-y-6">
+    <div className="bg-white rounded-2xl border p-6 shadow-sm">
+      <h2 className="text-xl font-bold mb-4">혈원 추가</h2>
 
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-
-    <div className="bg-white rounded-2xl w-[1000px] max-h-[90vh] overflow-auto p-6">
-
-      <div className="flex justify-between items-center mb-5">
-
-        <h2 className="text-2xl font-bold">
-          혈원 관리
-        </h2>
-
-        <button
-          onClick={() => setShowMemberManager(false)}
-          className="px-4 py-2 rounded-xl bg-gray-100"
-        >
-          닫기
-        </button>
-
-      </div>
-
-      <div className="mb-8">
-
-        <h3 className="text-lg font-bold mb-3">
-          혈원 추가
-        </h3>
-
-        <div className="space-y-2">
-
-          {newMembers.map((member, idx) => (
-
-            <div
-              key={idx}
-              className="grid grid-cols-2 gap-3"
-            >
-
-              <input
-                type="text"
-                placeholder={`혈원명 ${idx + 1}`}
-                value={member.name}
-                onChange={(e) => {
-
-                  const updated = [...newMembers]
-
-                  updated[idx] = {
-                    ...updated[idx],
-                    name: e.target.value
-                  }
-
-                  setNewMembers(updated)
-
-                }}
-                className="border rounded-xl px-3 py-2"
-              />
-
-              <select
-                value={member.group}
-                onChange={(e) => {
-
-                  const updated = [...newMembers]
-
-                  updated[idx] = {
-                    ...updated[idx],
-                    group: e.target.value
-                  }
-
-                  setNewMembers(updated)
-
-                }}
-                className="border rounded-xl px-3 py-2"
-              >
-                <option>기사</option>
-                <option>요정</option>
-                <option>법사</option>
-                <option>미확인</option>
-              </select>
-
-            </div>
-
-          ))}
-
-        </div>
-
-        <button
-          onClick={addMembers}
-          className="mt-4 px-5 py-3 rounded-xl bg-green-500 text-white font-bold"
-        >
-          혈원 추가 저장
-        </button>
-
-      </div>
-
-      <div>
-
-        <div className="flex justify-between items-center mb-4">
-
-          <h3 className="text-lg font-bold">
-            혈원 수정 / 삭제
-          </h3>
-
-          <button
-            onClick={deleteSelectedMembers}
-            className="px-4 py-2 rounded-xl bg-red-500 text-white font-bold"
-          >
-            선택 삭제
-          </button>
-
-        </div>
-
-        <div className="grid grid-cols-4 gap-4">
-
-          {Object.entries(groups).map(([groupName, members]) => (
-
-            <div
-              key={groupName}
-              className="border rounded-2xl p-4"
-            >
-
-              <div className="font-bold mb-3">
-                {groupName}
-              </div>
-
-              <div className="space-y-2">
-
-                {members.map((member) => (
-
-                  <div
-                    key={member.name}
-                    className="flex items-center gap-2 border rounded-xl px-2 py-2"
-                  >
-
-                    <input
-                      type="checkbox"
-                      checked={selectedDeleteMembers.includes(member.name)}
-                      onChange={(e) => {
-
-                        if (e.target.checked) {
-
-                          setSelectedDeleteMembers((prev) => [
-                            ...prev,
-                            member.name
-                          ])
-
-                        } else {
-
-                          setSelectedDeleteMembers((prev) =>
-                            prev.filter((name) => name !== member.name)
-                          )
-
-                        }
-
-                      }}
-                    />
-
-                    <div className="flex-1 text-sm truncate">
-                      {member.name}
-                    </div>
-
-                    <button
-                      onClick={() => {
-
-                        setEditingMember(member)
-                        setEditingMemberName(member.name)
-
-                      }}
-                      className="px-2 py-1 rounded-lg bg-yellow-100 text-xs"
-                    >
-                      수정
-                    </button>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
-
-      {editingMember && (
-
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-
-          <div className="bg-white rounded-2xl p-6 w-[400px]">
-
-            <h3 className="text-xl font-bold mb-4">
-              혈원 수정
-            </h3>
-
+      <div className="grid grid-cols-3 gap-3">
+        {newMembers.map((member, idx) => (
+          <div key={idx} className="grid grid-cols-2 gap-3">
             <input
               type="text"
-              value={editingMemberName}
-              onChange={(e) =>
-                setEditingMemberName(e.target.value)
-              }
-              className="w-full border rounded-xl px-3 py-3 mb-4"
+              placeholder={`혈원명 ${idx + 1}`}
+              value={member.name}
+              onChange={(e) => {
+                const updated = [...newMembers]
+                updated[idx] = {
+                  ...updated[idx],
+                  name: e.target.value,
+                }
+                setNewMembers(updated)
+              }}
+              className="border rounded-xl px-3 py-2"
             />
 
-            <div className="flex gap-2">
-
-              <button
-                onClick={updateMemberName}
-                className="flex-1 bg-yellow-400 rounded-xl py-3 font-bold"
-              >
-                저장
-              </button>
-
-              <button
-                onClick={() => setEditingMember(null)}
-                className="flex-1 bg-gray-200 rounded-xl py-3 font-bold"
-              >
-                취소
-              </button>
-
-            </div>
-
+            <select
+              value={member.group}
+              onChange={(e) => {
+                const updated = [...newMembers]
+                updated[idx] = {
+                  ...updated[idx],
+                  group: e.target.value,
+                }
+                setNewMembers(updated)
+              }}
+              className="border rounded-xl px-3 py-2"
+            >
+              <option>기사</option>
+              <option>요정</option>
+              <option>법사</option>
+              <option>미확인</option>
+            </select>
           </div>
+        ))}
+      </div>
 
-        </div>
-
-      )}
-
+      <button
+        onClick={addMembers}
+        className="mt-4 px-5 py-3 rounded-xl bg-green-500 text-white font-bold"
+      >
+        혈원 추가 저장
+      </button>
     </div>
 
-  </div>
+    <div className="bg-white rounded-2xl border p-6 shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">혈원 수정 / 삭제</h2>
 
+        <button
+          onClick={deleteSelectedMembers}
+          className="px-4 py-2 rounded-xl bg-red-500 text-white font-bold"
+        >
+          선택 삭제
+        </button>
+      </div>
+
+      <div className="grid grid-cols-4 gap-5">
+        {Object.entries(groups).map(([groupName, members]) => (
+          <div key={groupName} className="border rounded-2xl p-4">
+            <div className="font-bold text-lg mb-3">
+              {groupName} {members.length}명
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+  {members.map((member) => {
+    const selected = selectedDeleteMembers.includes(member.name)
+
+    return (
+      <div
+        key={member.name}
+        onClick={() => {
+          setSelectedDeleteMembers((prev) =>
+            prev.includes(member.name)
+              ? prev.filter((name) => name !== member.name)
+              : [...prev, member.name]
+          )
+        }}
+        className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm cursor-pointer ${
+          selected
+            ? 'bg-red-100 border-red-400 text-red-700'
+            : 'bg-white border-gray-200 hover:bg-red-50'
+        }`}
+      >
+        <div className="font-bold truncate">
+          {member.name}
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setEditingMember(member)
+            setEditingMemberName(member.name)
+          }}
+          className="shrink-0 px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-xs font-bold hover:bg-yellow-200"
+        >
+          수정
+        </button>
+      </div>
+    )
+  })}
+</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {editingMember && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-2xl p-6 w-[400px]">
+          <h3 className="text-xl font-bold mb-4">혈원 수정</h3>
+
+          <input
+            type="text"
+            value={editingMemberName}
+            onChange={(e) => setEditingMemberName(e.target.value)}
+            className="w-full border rounded-xl px-3 py-3 mb-4"
+          />
+
+          <div className="flex gap-2">
+            <button
+              onClick={updateMemberName}
+              className="flex-1 bg-yellow-400 rounded-xl py-3 font-bold"
+            >
+              저장
+            </button>
+
+            <button
+              onClick={() => setEditingMember(null)}
+              className="flex-1 bg-gray-200 rounded-xl py-3 font-bold"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
 )}
+
       </div>
     </div>
   )
