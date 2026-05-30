@@ -1095,7 +1095,7 @@ const deleteSelectedMembers = async () => {
                     </div>
                   </div>
 
-                  <div className="p-3 grid grid-cols-2 gap-1 min-h-[650px]">
+                  <div className="p-3 grid grid-cols-3 gap-2 min-h-[650px]">
                     {[...members]
                       .sort((a, b) => getParticipationRate(b) - getParticipationRate(a))
                       .map((member) => {
@@ -1107,9 +1107,9 @@ const deleteSelectedMembers = async () => {
                             draggable
                             onDragStart={() => dragStart(member, groupName)}
                             onClick={() => toggleMember(member.name)}
-                            className={`grid grid-cols-[90px_1fr_70px] items-center gap-1 text-[11px] px-2 py-2 rounded-xl border cursor-pointer transition-all hover:bg-yellow-50 ${selected ? 'bg-yellow-100 border-yellow-400 shadow-sm' : 'bg-white border-gray-200'}`}
+                            className={`flex items-center justify-between gap-2 text-sm px-3 py-3 rounded-xl border cursor-pointer transition-all hover:bg-yellow-50 ${selected ? 'bg-yellow-100 border-yellow-400 shadow-sm' : 'bg-white border-gray-200'}`}
                           >
-                            <div className="font-bold truncate">
+                            <div className="font-bold text-[15px] truncate">
                               {member.name}
                             </div>
 
