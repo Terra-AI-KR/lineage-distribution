@@ -202,6 +202,8 @@ export default function App() {
 
   let addedCount = 0
 
+  const namesToAdd = []
+
   newMembers.forEach((member) => {
     const name = member.name.trim()
     const groupName = member.group || '미확인'
@@ -212,7 +214,17 @@ export default function App() {
       .flat()
       .some((m) => m.name === name)
 
-    if (alreadyExists) return
+    if (alreadyExists) {
+       alert(`${name}은 이미 있는 닉네임입니다.`)
+    return
+    }
+
+    if (namesToAdd.includes(name)) {
+       alert(`${name}은 이미 입력한 닉네임입니다.`)
+    return
+    }
+
+    namesToAdd.push(name)
 
     updated[groupName].push({
       name,
