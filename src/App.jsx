@@ -3,6 +3,12 @@ import { supabase } from './supabaseClient'
 import './index.css'
 
 export default function App() {
+  const servers = [
+    { id: 'main', name: '왕혈', password: '0529' },
+    { id: 'server2', name: '킹연합', password: '1818' },
+    { id: 'server3', name: '서버3', password: '1234' },
+  ]
+
   const makeMember = (name) => ({
     name,
     unpaid: 0,
@@ -42,6 +48,17 @@ export default function App() {
     ].map(makeMember),
   }
 
+  const emptyGroups = {
+    기사: [],
+    요정: [],
+    법사: [],
+    미확인: [],
+  }
+
+  const getDefaultGroups = (serverId) => (
+    serverId === 'main' ? initialGroups : emptyGroups
+  )
+
   const bossTimes = [
     '01시', '03시', '05시', '06시', '07시', '09시', '11시', '12시',
     '13시', '15시', '17시', '18시', '19시', '21시', '22시', '24시',
@@ -66,6 +83,7 @@ export default function App() {
   const [selectedPaymentHistory, setSelectedPaymentHistory] = useState([])
   const [activeTab, setActiveTab] = useState('input')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [selectedServerId, setSelectedServerId] = useState('main')
   const [passwordInput, setPasswordInput] = useState('')
   const [selectedRaid, setSelectedRaid] = useState(null)
   const [editingIndex, setEditingIndex] = useState(null)
@@ -661,134 +679,201 @@ const deleteSelectedMembers = async () => {
   alert('선택한 지급 처리를 되돌렸습니다.')
 }
 
-  const loadData = async () => {
-  const { data, error } = await supabase
-    .from('app_state')
-    .select('*')
-    .eq('id', 'main')
-    .single()
-
-  if (error) {
-    console.error(error)
-    return
+  const resetAppState = (serverId = selectedServerId) => {
+    setGroups(getDefaultGroups(serverId))
+    setSelectedMembers([])
+    setRaidHistory([])
+    setPaymentHistory([])
+    setSelectedPayoutMembers([])
+    setSelectedPaymentHistory([])
+    setActiveTab('input')
+    setSelectedRaid(null)
+    setEditingIndex(null)
+    resetForm()
   }
 
-  if (data?.data) {
+  const loadData = async (serverId = selectedServerId) => {
+    const { data, error } = await supabase
+      .from('app_state')
+      .select('*')
+      .eq('id', serverId)
+      .maybeSingle()
+
+    if (error) {
+      console.error(error)
+      alert('서버 데이터를 불러오지 못했습니다.')
+      return false
+    }
+
+    if (!data?.data) {
+      const defaultGroups = getDefaultGroups(serverId)
+
+      setGroups(defaultGroups)
+      setRaidHistory([])
+      setPaymentHistory([])
+
+      await saveData(
+        defaultGroups,
+        [],
+        [],
+        serverId
+      )
+
+      return true
+    }
+
     const saved = data.data
 
     const hasSavedMembers =
-  saved.groups &&
-  Object.values(saved.groups).some(
-    (members) => Array.isArray(members) && members.length > 0
-  )
+      saved.groups &&
+      Object.values(saved.groups).some(
+        (members) => Array.isArray(members) && members.length > 0
+      )
 
-if (hasSavedMembers) {
-  setGroups(saved.groups)
-} else {
-  setGroups(initialGroups)
+    if (hasSavedMembers) {
+      setGroups(saved.groups)
+    } else {
+      const defaultGroups = getDefaultGroups(serverId)
 
-  saveData(
-    initialGroups,
-    saved.raidHistory || [],
-    saved.paymentHistory || []
-  )
-}
+      setGroups(defaultGroups)
 
-    if (saved.raidHistory) {
-      setRaidHistory(saved.raidHistory)
+      await saveData(
+        defaultGroups,
+        saved.raidHistory || [],
+        saved.paymentHistory || [],
+        serverId
+      )
     }
 
-    if (saved.paymentHistory) {
-      setPaymentHistory(saved.paymentHistory)
+    setRaidHistory(saved.raidHistory || [])
+    setPaymentHistory(saved.paymentHistory || [])
+
+    return true
+  }
+
+  const saveData = async (
+    updatedGroups = groups,
+    updatedRaidHistory = raidHistory,
+    updatedPaymentHistory = paymentHistory,
+    serverId = selectedServerId
+  ) => {
+    const payload = {
+      groups: updatedGroups,
+      raidHistory: updatedRaidHistory,
+      paymentHistory: updatedPaymentHistory,
     }
-  }
-}
 
-const saveData = async (
-  updatedGroups = groups,
-  updatedRaidHistory = raidHistory,
-  updatedPaymentHistory = paymentHistory
-) => {
-  const payload = {
-    groups: updatedGroups,
-    raidHistory: updatedRaidHistory,
-    paymentHistory: updatedPaymentHistory,
-  }
+    const { error } = await supabase
+      .from('app_state')
+      .upsert(
+        {
+          id: serverId,
+          data: payload,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
 
-  const { error } = await supabase
-    .from('app_state')
-    .upsert(
-      {
-        id: 'main',
-        data: payload,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    )
+    if (error) {
+      console.error(error)
+      alert('DB 저장 실패')
+      return false
+    }
 
-  if (error) {
-    console.error(error)
-    alert('DB 저장 실패')
-    return false
+    console.log('DB 저장 성공:', serverId)
+    return true
   }
 
-  console.log('DB 저장 성공')
-  return true
-}
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadData(selectedServerId)
+    }
+  }, [isLoggedIn, selectedServerId])
 
-useEffect(() => {
-  loadData()
-}, [])
+  const currentServer = servers.find((server) => server.id === selectedServerId)
 
-const loginPassword = '0529'
+  const handleLogin = async () => {
+    const server = servers.find((item) => item.id === selectedServerId)
 
-const handleLogin = () => {
-  if (passwordInput === loginPassword) {
+    if (!server) {
+      alert('서버를 선택하세요.')
+      return
+    }
+
+    if (passwordInput !== server.password) {
+      alert('비밀번호가 틀렸습니다.')
+      return
+    }
+
+    resetAppState(selectedServerId)
     setIsLoggedIn(true)
     setPasswordInput('')
-  } else {
-    alert('비밀번호가 틀렸습니다.')
   }
-}
 
-const handleLogout = () => {
-  setIsLoggedIn(false)
-  setPasswordInput('')
-}
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+    setPasswordInput('')
+    resetAppState(selectedServerId)
+  }
 
-if (!isLoggedIn) {
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-2xl border shadow-sm p-8 w-[360px]">
-        <h1 className="text-2xl font-bold mb-4">
-          반격라인 분배 계산기
-        </h1>
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border shadow-sm p-8 w-[390px]">
+          <h1 className="text-2xl font-bold mb-4">
+            반격라인 분배 계산기
+          </h1>
 
-        <p className="text-gray-500 text-sm mb-5">
-          비밀번호를 입력하세요.
-        </p>
+          <p className="text-gray-500 text-sm mb-5">
+            서버를 선택하고 비밀번호를 입력하세요.
+          </p>
 
-        <input
-          type="password"
-          value={passwordInput}
-          onChange={(e) => setPasswordInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleLogin()
-          }}
-          placeholder="비밀번호"
-          className="w-full border rounded-xl px-4 py-3 mb-4"
-        />
+          <div className="font-bold text-sm mb-2">
+            서버 선택
+          </div>
 
-        <button
-          onClick={handleLogin}
-          className="w-full bg-yellow-400 hover:bg-yellow-500 rounded-xl py-3 font-bold"
-        >
-          접속하기
-        </button>
+          <select
+            value={selectedServerId}
+            onChange={(e) => setSelectedServerId(e.target.value)}
+            className="w-full border rounded-xl px-4 py-3 mb-4"
+          >
+            {servers.map((server) => (
+              <option key={server.id} value={server.id}>
+                {server.name}
+              </option>
+            ))}
+          </select>
+
+          <div className="font-bold text-sm mb-2">
+            비밀번호
+          </div>
+
+          <input
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleLogin()
+            }}
+            placeholder="비밀번호"
+            className="w-full border rounded-xl px-4 py-3 mb-4"
+          />
+
+          <button
+            onClick={handleLogin}
+            className="w-full bg-yellow-400 hover:bg-yellow-500 rounded-xl py-3 font-bold"
+          >
+            접속하기
+          </button>
+
+          <div className="mt-6 pt-4 border-t text-center text-xs text-gray-500 leading-6">
+            <div>made by 군터서버 반격라인 왕혈 발트리스</div>
+            <div>도움주신분들 데스나이트 약탈자 삼고초려</div>
+          </div>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   return (
     
@@ -837,7 +922,7 @@ if (!isLoggedIn) {
           </h1>
 
           <p className="text-gray-500">
-            왕혈 보스 분배 시스템
+            {currentServer?.name || '서버'} · 왕혈 보스 분배 시스템
           </p>
         </div>
 
