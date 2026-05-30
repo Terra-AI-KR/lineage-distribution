@@ -72,7 +72,7 @@ export default function App() {
     '선버스트', '트리플 애로우', '블러드 투 소울', '블레스 오브 어스',
     '아이 오브 스톰', '블레스 오브 파이어', '순간이동조종반지',
     '변신조종반지', '발터자르의 모자', '메르키오르의 모자',
-    '지식의 목걸이', '완력의 목걸이',
+    '지식의 목걸이', '완력의 목걸이', '축데이', '축젤'
   ]
 
   const [groups, setGroups] = useState(initialGroups)
@@ -821,7 +821,7 @@ const deleteSelectedMembers = async () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white rounded-2xl border shadow-sm p-8 w-[390px]">
           <h1 className="text-2xl font-bold mb-4">
-            반격라인 분배 계산기
+            리니지클래식 분배 계산기
           </h1>
 
           <p className="text-gray-500 text-sm mb-5">
@@ -918,11 +918,11 @@ const deleteSelectedMembers = async () => {
 
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">
-            반격라인 분배 계산기
+            리니지클래식 분배 계산기
           </h1>
 
           <p className="text-gray-500">
-            {currentServer?.name || '서버'} · 왕혈 보스 분배 시스템
+            {currentServer?.name || '서버'} · 보스탐 분배 시스템
           </p>
         </div>
 
