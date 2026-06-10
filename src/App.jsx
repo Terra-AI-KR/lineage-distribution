@@ -7,7 +7,7 @@ export default function App() {
     { id: 'main', name: '왕혈', password: '0529' },
     { id: 'server2', name: '킹연합', password: '1818' },
     { id: 'server3', name: '서버3', password: '1234' },
-    { id: 'server4', name: '데컨 어벤져스', password: '0604' },
+    { id: 'server4', name: '데컨 어벤져스', password: '6235' },
     { id: 'server5', name: '서버5', password: '1234' },
     { id: 'server6', name: '서버6', password: '1234' },
     { id: 'server7', name: '서버7', password: '1234' },
